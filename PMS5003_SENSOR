@@ -1,0 +1,72 @@
+#include <WiFi.h>
+#include <WebServer.h>
+#include "PMS.h"
+#include <HardwareSerial.h>
+#include <Wire.h>
+#include <ThingSpeak.h>
+
+
+ 
+PMS pms(Serial2);
+PMS::DATA data;
+ 
+ 
+String val1;
+String val2;
+String val3;
+
+long myChannelNumber = ;
+const char myWriteAPIKey[] = "";
+const char* ssid = "";
+const char* password = "";
+const char* server = "api.thingspeak.com"; 
+
+WiFiClient client; 
+void setup()
+{
+  Serial.begin(9600);
+  Serial2.begin(9600);
+  ThingSpeak.begin(client); 
+  Serial.println("Connecting to ");
+  Serial.println(ssid);
+ 
+  //connect to your local wi-fi network
+  WiFi.begin(ssid, password);
+ 
+  //check wi-fi is connected to wi-fi network
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi connected..!");
+  Serial.print("Got IP: ");
+  Serial.println(WiFi.localIP());
+ 
+}
+ 
+void loop()
+{
+  if (pms.read(data))
+  { val1 = data.PM_AE_UG_1_0;
+    val2 = data.PM_AE_UG_2_5;
+    val3 = data.PM_AE_UG_10_0;
+                      
+ 
+    Serial.println("Air Quality Monitor");
+ 
+    Serial.println("PM1.0 :" + val1 + "(ug/m3)");
+ 
+    Serial.println("PM2.5 :" + val2 + "(ug/m3)");
+ 
+    Serial.println("PM10  :" + val3 + "(ug/m3)");
+ 
+    Serial.println("");
+    ThingSpeak.setField(1,val1);
+    ThingSpeak.setField(2,val2);
+    ThingSpeak.setField(3,val3);
+    ThingSpeak.writeFields(myChannelNumber,myWriteAPIKey);
+    delay(10000);
+  }
+  }
